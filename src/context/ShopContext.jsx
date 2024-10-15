@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { products } from "../assets/frontend_assets/assets";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export const ShopContext = createContext();
 
@@ -8,8 +9,8 @@ export const ShopContextProvider = ({ children }) => {
     const [search, setSearch] = useState("");
     const [showSearch, setShowSearch] = useState(true);
     const [cartItems, setCartItems] = useState({});
-
-    const addToCart =  (itemId, size) => {
+    const navigate = useNavigate()
+    const addToCart = (itemId, size) => {
         if (!size) {
             toast.error("Select Product Size");
             return;
@@ -50,20 +51,48 @@ export const ShopContextProvider = ({ children }) => {
         }
         return count;
     };
+    const updateQuantity = async (itemId, size, quantity) => {
+        let cartData = structuredClone(cartItems);
+        cartData[itemId][size] = quantity;
+        setCartItems(cartData)
 
+    }
+    const getCartAmount = () => {
+        let cartData = structuredClone(cartItems)
+        let total = 0;
+        for (const items in cartData) {
+            let iteminfo = products.find((product) => (product._id === items));
+            for (const item in cartItems[items]) {
+                try {
+                    if (cartItems[items][item] > 0) {
+                        total += iteminfo.price * cartItems[items][item];
+
+                    }
+
+                } catch (error) {
+
+                }
+            }
+        }
+        return total;
+
+    }
     return (
         <ShopContext.Provider value={{
             products,
             currency: "$",
-            delivery_fee: 100,
+            delivery: 50,
             search,
             setSearch,
             showSearch,
             setShowSearch,
             cartItems,
             addToCart,
-            removeFromCart, 
-            getCartCount
+            removeFromCart,
+            getCartCount,
+            updateQuantity,
+            getCartAmount,
+            navigate
         }}>
             {children}
         </ShopContext.Provider>

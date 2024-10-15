@@ -4,7 +4,7 @@ import { assets } from '../assets/frontend_assets/assets';
 import { useShop } from '../context/ShopContext';
 function Navbar() {
     const [visible,setvisible]=useState(false)
-    const {showSearch,setShowSearch,getCartCount}=useShop()
+    const {showSearch,setShowSearch,getCartCount,navigate}=useShop()
 
 
     return (
@@ -29,11 +29,17 @@ function Navbar() {
                     <p>Contact</p> 
                     <hr className='w-2/4 border-none h-[1.5px] bg-gray-700 hidden' />
                 </NavLink>
+                
+                {/* <NavLink to="/admin" className="flex flex-col items-center gap-1">
+                    <button className='border px-5 text-xs py-1 rounded-full -mt-2 '><p className='mt-1'>Admin Panel</p></button>
+                    <hr className='w-2/4 border-none h-[1.5px] bg-gray-700 hidden' />
+                </NavLink> */}
+
             </ul>
             <div className='flex items-center gap-6'>
               <Link to={"/collection"}>  <img onClick={()=>setShowSearch(!showSearch)} src={assets.search_icon} className='w-5 cursor-pointer' alt="" /></Link>
                 <div className='relative group'>
-                    <img className='w-5 cursor-pointer' src={assets.profile_icon} alt="" />
+                    <img onClick={()=> navigate("/login")} className='w-5 cursor-pointer' src={assets.profile_icon} alt="" />
                     <div className='hidden group-hover:flex absolute right-0 pt-4 z-10'>
                         <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded shadow-lg'>
                             <p className='cursor-pointer hover:text-black'>Profile</p>
@@ -56,7 +62,7 @@ function Navbar() {
                         <p className='cursor-pointer uppercase' onClick={()=>setvisible(false)}>Back</p>
                     </div>
                     <NavLink 
-                        onClick={() => setVisible(false)} 
+                        onClick={() => setvisible(false)} 
                         className={({ isActive }) => `py-3 uppercase pl-4 text-[17px] font-normal border ${isActive ? 'bg-black text-white' : ''}`} 
                         to="/"
                     >

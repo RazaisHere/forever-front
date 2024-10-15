@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import Title from '../components/Title';
 import { assets } from '../assets/frontend_assets/assets';
+import CartTotal from '../components/CartTotal';
 
 function Cart() {
-    const { products, currency, cartItems, removeFromCart } = useShop();
+    const { products, currency, cartItems, removeFromCart, updateQuantity,navigate } = useShop();
     const [cartData, setCartData] = useState([]);
 
     useEffect(() => {
@@ -56,17 +57,26 @@ function Cart() {
                                             </div>
                                         </div>
                                     </div>
-                                    <input type="number" min={1} defaultValue={item.quantity} className='border max-w-10 sm:max-w-20 px-1 sm:px-2 py-1' />
-                                    <img onClick={() => handleDelete(item._id, item.size)} src={assets.bin_icon} className='w-4 sm:w-5 cursor-pointer' alt="Delete" />
+                                    <input onChange={(e) => e.target.value === '' || e.target.value === "0" ? null : updateQuantity(item._id, item.size, Number(e.target.value))} type="number" min={1} defaultValue={item.quantity} className='border max-w-10  sm:max-w-20 px-1 sm:px-2 sm:py-1' />
+                                    <img onClick={() => updateQuantity(item._id, item.size, 0)} src={assets.bin_icon} className='w-4 ml-2 sm:w-5 cursor-pointer' alt="Delete" />
                                 </div>
                             );
                         })}
                     </div>
                 ) : (
                     <div>
-                        <p className='text-center text-2xl font-medium py-10 text-gray-500'>Your cart is Empty</p>
+                        <p className='text-center text-2xl font-medium py-10 text-gray-500'>WHOOPS !!! <br /><div className='mt-2 text-3xl'>Your cart is Empty</div></p>
                     </div>
                 )}
+            </div>
+            <div className='flex justify-end my-20'>
+
+                <div className='w-full sm:w-[450px]'>
+                    <CartTotal />
+                    <div className='w-full text-end'>
+                        <button onClick={()=>navigate("/place-order")} className='bg-black text-white text-sm my-8 px-8 py-3 active:bg-white active:border active:border-black active:text-black' >Proceed To Checkout</button>
+                    </div>
+                </div>
             </div>
         </div>
     );
