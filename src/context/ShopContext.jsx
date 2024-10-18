@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { products } from "../assets/frontend_assets/assets";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export const ShopContext = createContext();
 
@@ -9,74 +10,110 @@ export const ShopContextProvider = ({ children }) => {
     const [search, setSearch] = useState("");
     const [showSearch, setShowSearch] = useState(true);
     const [cartItems, setCartItems] = useState({});
-    const navigate = useNavigate()
-    const addToCart = (itemId, size) => {
+    const [token, setToken] = useState(() => localStorage.getItem("token") || "");
+    const [userId, setUserId] = useState(() => localStorage.getItem("userId") || ""); // Store userId if needed
+    const navigate = useNavigate();
+
+    // Function to add item to cart
+    const addToCart = async (itemId, size) => {
         if (!size) {
             toast.error("Select Product Size");
             return;
         }
-        let cartData = structuredClone(cartItems);
-        if (cartData[itemId]) {
-            if (cartData[itemId][size]) {
-                cartData[itemId][size] += 1;
-            } else {
-                cartData[itemId][size] = 1;
-            }
-        } else {
-            cartData[itemId] = {};
-            cartData[itemId][size] = 1;
-        }
-        setCartItems(cartData);
-    };
 
-    const removeFromCart = (itemId, size) => {
         let cartData = structuredClone(cartItems);
         if (cartData[itemId]) {
-            if (cartData[itemId][size]) {
-                delete cartData[itemId][size];
-                if (Object.keys(cartData[itemId]).length === 0) {
-                    delete cartData[itemId];
-                }
-            }
+            cartData[itemId][size] = (cartData[itemId][size] || 0) + 1;
+        } else {
+            cartData[itemId] = { [size]: 1 };
         }
         setCartItems(cartData);
+
+        if (token) {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await axios.post("http://localhost:5000/api/cart/addToCart", { itemId, size }, { headers: { Authorization: `Bearer ${token}` } });
+                if (res.data.success) {
+                    toast.success("Item added")
+                }
+
+            } catch (error) {
+
+                console.log(error);
+                toast.error(error.message)
+
+            }
+        }
+
+
+
     };
 
     const getCartCount = () => {
-        let count = 0;
-        for (const items in cartItems) {
-            for (const item in cartItems[items]) {
-                count += cartItems[items][item];
-            }
-        }
-        return count;
+        return Object.values(cartItems).reduce((count, sizes) =>
+            count + Object.values(sizes).reduce((sum, quantity) => sum + quantity, 0), 0
+        );
     };
+
     const updateQuantity = async (itemId, size, quantity) => {
-        let cartData = structuredClone(cartItems);
-        cartData[itemId][size] = quantity;
-        setCartItems(cartData)
+        const cartData = { ...cartItems };
+        cartData[itemId] = { ...cartData[itemId], [size]: quantity };
+        setCartItems(cartData);
 
-    }
-    const getCartAmount = () => {
-        let cartData = structuredClone(cartItems)
-        let total = 0;
-        for (const items in cartData) {
-            let iteminfo = products.find((product) => (product._id === items));
-            for (const item in cartItems[items]) {
-                try {
-                    if (cartItems[items][item] > 0) {
-                        total += iteminfo.price * cartItems[items][item];
-
-                    }
-
-                } catch (error) {
-
-                }
+        if (token) {
+            try {
+                await axios.post("http://localhost:5000/api/cart/updatecart", { itemId, size, quantity }, { headers: { Authorization: `Bearer ${token}` } })
+            } catch (error) {
+                console.log(error);
+                toast.error(error.message)
             }
         }
-        return total;
+    };
+    const getUserCart = async (token) => {
+        try {
+            const response = await axios.post("http://localhost:5000/api/cart/getcart", {}, { headers: { Authorization: `Bearer ${token}` } })
+            if (response.data.success) {
+                setCartItems(response.data.cartData)
+            }
+        }
+        catch (error) {
 
+            console.log(error);
+            toast.error(error.message)
+        }
     }
+
+
+    const getCartAmount = () => {
+        return Object.entries(cartItems).reduce((total, [itemId, sizes]) => {
+            const item = products.find((product) => product._id === itemId);
+            if (!item) return total;
+            return total + Object.entries(sizes).reduce(
+                (subtotal, [size, quantity]) => subtotal + item.price * quantity,
+                0
+            );
+        }, 0);
+    };
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId"); // Remove userId on logout
+        setToken("");
+        setUserId("");
+        setCartItems({});
+        navigate("/login");
+    };
+
+    useEffect(() => {
+        if (localStorage.getItem("token")) {
+            setToken(localStorage.getItem("token"));
+            setUserId(localStorage.getItem("userId")); // Set userId from localStorage
+            getUserCart(localStorage.getItem("token"));
+        }
+    }, []);
+
+
+
     return (
         <ShopContext.Provider value={{
             products,
@@ -88,15 +125,18 @@ export const ShopContextProvider = ({ children }) => {
             setShowSearch,
             cartItems,
             addToCart,
-            removeFromCart,
             getCartCount,
             updateQuantity,
             getCartAmount,
-            navigate
+            navigate,
+            setToken,
+            token,
+            logout
         }}>
             {children}
         </ShopContext.Provider>
     );
 };
-
-export const useShop = () => useContext(ShopContext);
+export const useShop = () => {
+    return useContext(ShopContext);
+};

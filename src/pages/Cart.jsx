@@ -5,18 +5,18 @@ import { assets } from '../assets/frontend_assets/assets';
 import CartTotal from '../components/CartTotal';
 
 function Cart() {
-    const { products, currency, cartItems, removeFromCart, updateQuantity,navigate } = useShop();
+    const { products, currency, cartItems,updateQuantity,navigate } = useShop();
     const [cartData, setCartData] = useState([]);
 
     useEffect(() => {
         const tempData = [];
-        for (const items in cartItems) {
-            for (const item in cartItems[items]) {
-                if (cartItems[items][item] > 0) {
+        for (const ID in cartItems) {
+            for (const Size in cartItems[ID]) {
+                if (cartItems[ID][Size] > 0) {
                     tempData.push({
-                        _id: items,
-                        size: item,
-                        quantity: cartItems[items][item]
+                        _id: ID,
+                        size: Size,
+                        quantity: cartItems[ID][Size]
                     });
                 }
             }
@@ -24,9 +24,7 @@ function Cart() {
         setCartData(tempData);
     }, [cartItems]);
 
-    const handleDelete = (id, size) => {
-        removeFromCart(id, size);
-    };
+
 
     return (
         <div>
@@ -65,7 +63,7 @@ function Cart() {
                     </div>
                 ) : (
                     <div>
-                        <p className='text-center text-2xl font-medium py-10 text-gray-500'>WHOOPS !!! <br /><div className='mt-2 text-3xl'>Your cart is Empty</div></p>
+                        <div className='text-center text-2xl font-medium py-10 text-gray-500'>WHOOPS !!! <br /><div className='mt-2 text-3xl'>Your cart is Empty</div></div>
                     </div>
                 )}
             </div>

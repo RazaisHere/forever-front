@@ -16,26 +16,27 @@ function Collection() {
 
   function toggleCategory(e) {
     if (category.includes(e.target.value)) {
-      setCategory(category.filter(item => item !== e.target.value));
+      setCategory(category.filter(item => item !== e.target.value));//removing the selected Category if it already exist in array
     }
     else {
-      setCategory(prev => [...prev, e.target.value])
+      setCategory(prev => [...prev, e.target.value])//removing the selected Category
     }
   }
   function toggleSubCategory(e) {
     if (subCategory.includes(e.target.value)) {
-      setSubCategory(subCategory.filter(item => item !== e.target.value));
+      setSubCategory(subCategory.filter(item => item !== e.target.value));//removing the selected Category if it already exist in array
     }
     else {
-      setSubCategory(prev => [...prev, e.target.value])
+      setSubCategory(prev => [...prev, e.target.value])//removing the selected Category
     }
   }
   useEffect(() => {
-    applyfilter();
+    applyfilter();//apply filers on first render
   }, [category, subCategory,search,showSearch])
 
   useEffect(() => {
-    setCollectionP(products);
+    setCollectionP(products);//set all the products from  shop context to collectionproducts
+
   }, [products]);
 
   function handleVisibility() {
@@ -43,18 +44,22 @@ function Collection() {
   }
   function applyfilter() {
     let productCopy = products.slice();
-    if(showSearch && search){
-      productCopy=productCopy.filter(item=>item.name.toLowerCase().includes(search.toLowerCase()))
+    
+    if (showSearch && search) {
+        productCopy = productCopy.filter(item => item.name.toLowerCase().includes(search.toLowerCase()));
     }
-    if (category.length > 0) {
-      productCopy = productCopy.filter((item) => (category.includes(item.category)))
-    }
-    else if (subCategory.length > 0) {
-      productCopy = productCopy.filter((item) => (subCategory.includes(item.subCategory)))
-    }
-    setCollectionP(productCopy)
 
-  }
+    if (category.length > 0) {
+        productCopy = productCopy.filter(item => category.includes(item.category));
+    }
+
+    if (subCategory.length > 0) {
+        productCopy = productCopy.filter(item => subCategory.includes(item.subCategory));
+    }
+
+    setCollectionP(productCopy);
+}
+
   
   const sortProduct = () => {
     let filterP = collectionP.slice();
@@ -79,7 +84,7 @@ function Collection() {
     }
   }
   useEffect(() => {
-    sortProduct();
+    sortProduct();//render the default sorted products
   }, [sortType])
   return (
   <div>
@@ -125,7 +130,7 @@ function Collection() {
       </div>
       <div>
         <div className='w-full'>
-          <div className='flex justify-between mb-5'>
+          <div className='flex justify-between  mt-5 sm:mt-0 mb-5'>
             <div className='mt-2 sm:text-2xl'>
               <Title text1={"ALL"} text2={"COLLECTIONS"} />
             </div>

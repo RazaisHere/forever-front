@@ -3,7 +3,7 @@ import { useShop } from '../context/ShopContext';
 
 
 function Searchbar() {
-    const { search, setSearch, showSearch, setShowSearch } = useShop();
+    const { setSearch, showSearch, setShowSearch } = useShop();
     
 
     return showSearch ? (
@@ -13,9 +13,9 @@ function Searchbar() {
                     type="text" 
                     placeholder='Search' 
                     onChange={(e) => setSearch(e.target.value)} 
-                    className='flex-1 outline-none bg-inherit text-sm' 
+                    className='flex-1 outline-none bg-inherit text-sm pl-9 sm:pl-1 relative' 
                 />
-                <img src={assets.search_icon} className='w-4' alt="Search Icon" />
+                <img src={assets.search_icon} className='w-4 absolute right-[5rem] sm:right-[31%]' alt="Search Icon" />
             </div>
             <img src={assets.cross_icon} onClick={() => setShowSearch(false)} className='inline cursor-pointer w-3' alt="Close Icon" />
         </div>

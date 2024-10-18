@@ -4,8 +4,14 @@ import { assets } from '../assets/frontend_assets/assets';
 import { useShop } from '../context/ShopContext';
 function Navbar() {
     const [visible,setvisible]=useState(false)
-    const {showSearch,setShowSearch,getCartCount,navigate}=useShop()
-
+    const {setShowSearch,getCartCount,navigate,token,logout}=useShop()
+    // const logout=()=>{
+    //     localStorage.removeItem("token");
+    //     setToken(null)
+    //     setCartItems({})
+    //     navigate("/login")
+    //     console.log('setCartItems:', typeof setCartItems);
+    // }
 
     return (
         <div className='flex items-center justify-between py-[1.2rem]' style={{ fontFamily: "'Poppins', serif" }}>
@@ -30,23 +36,23 @@ function Navbar() {
                     <hr className='w-2/4 border-none h-[1.5px] bg-gray-700 hidden' />
                 </NavLink>
                 
-                {/* <NavLink to="/admin" className="flex flex-col items-center gap-1">
-                    <button className='border px-5 text-xs py-1 rounded-full -mt-2 '><p className='mt-1'>Admin Panel</p></button>
-                    <hr className='w-2/4 border-none h-[1.5px] bg-gray-700 hidden' />
-                </NavLink> */}
+                
 
             </ul>
             <div className='flex items-center gap-6'>
-              <Link to={"/collection"}>  <img onClick={()=>setShowSearch(!showSearch)} src={assets.search_icon} className='w-5 cursor-pointer' alt="" /></Link>
+              <Link to={"/collection"}>  <img onClick={()=>setShowSearch(true)} src={assets.search_icon} className='w-5 cursor-pointer' alt="" /></Link>
                 <div className='relative group'>
-                    <img onClick={()=> navigate("/login")} className='w-5 cursor-pointer' src={assets.profile_icon} alt="" />
+                    <img onClick={()=> token?null:navigate("/login")} className='w-5 cursor-pointer' src={assets.profile_icon} alt="" />
+                   {
+                    token && 
                     <div className='hidden group-hover:flex absolute right-0 pt-4 z-10'>
-                        <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded shadow-lg'>
-                            <p className='cursor-pointer hover:text-black'>Profile</p>
-                            <p className='cursor-pointer hover:text-black'>Settings</p>
-                            <p className='cursor-pointer hover:text-black'>Logout</p>
-                        </div>
+                    <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded shadow-lg'>
+                
+                        <p onClick={()=>navigate("/orders")} className='cursor-pointer hover:text-black'>My Orders</p>
+                        <p onClick={()=>logout()} className='cursor-pointer hover:text-black'>Logout</p>
                     </div>
+                </div>
+                   }
                 </div>
                 <Link to={"/cart"} className='relative'>
                     <img src={assets.cart_icon} className='w-5 min-w-5' alt="" />
@@ -69,7 +75,7 @@ function Navbar() {
                         Home
                     </NavLink>
                     <NavLink 
-                        onClick={() => setVisible(false)} 
+                        onClick={() => setvisible(false)} 
                         className={({ isActive }) => `py-3 uppercase pl-4 text-[17px] font-normal  border ${isActive ? 'bg-black text-white' : ''}`} 
                         to="/about"
                     >

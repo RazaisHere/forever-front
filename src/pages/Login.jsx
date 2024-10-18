@@ -1,24 +1,37 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 function Login() {
-    const [currentState, setCurrentState] = useState("Login");
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { navigate } = useShop(); // Use the navigate function from the ShopContext
+    const { navigate, token, setToken } = useShop();
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
-      
+        try {
+            const response = await axios.post('http://localhost:5000/api/users/login', { email, password });
+            if (response.data.success) {
+                const newToken = response.data.token;
+                setToken(newToken);
+                localStorage.setItem("token", newToken);
+                toast.success("Login Successful");
+                navigate("/");
+            } else {
+                toast.error(response.data.message || "Login Failed");
+            }
+        } catch (error) {
+            toast.error(error.message || "An error occurred during login");
+        }
     };
 
-    // Conditionally navigate to signup if currentState is not "Login"
-    if (currentState !== "Login") {
-        navigate("/signup");
-        return null; // Prevent rendering the rest of the component
-    }
+    useEffect(() => {
+        if (token) {
+            navigate('/');
+        }
+    }, [token, navigate]);
 
     return (
         <div>
