@@ -11,7 +11,7 @@ export const ShopContextProvider = ({ children }) => {
     const [showSearch, setShowSearch] = useState(true);
     const [cartItems, setCartItems] = useState({});
     const [token, setToken] = useState(() => localStorage.getItem("token") || "");
-    const [userId, setUserId] = useState(() => localStorage.getItem("userId") || ""); // Store userId if needed
+    const [userId, setUserId] = useState(() => localStorage.getItem("userId") || ""); 
     const navigate = useNavigate();
 
     // Function to add item to cart
@@ -23,39 +23,53 @@ export const ShopContextProvider = ({ children }) => {
 
         let cartData = structuredClone(cartItems);
         if (cartData[itemId]) {
-            cartData[itemId][size] = (cartData[itemId][size] || 0) + 1;
+            cartData[itemId][size] = (cartData[itemId][size]) + 1;
         } else {
             cartData[itemId] = { [size]: 1 };
+
         }
+
+        console.log("Updated Cart Data Before Set:", cartData);
+
         setCartItems(cartData);
+
+
+        const currentCount = getCartCount();
+        console.log("Cart Count After Adding Item:", currentCount);
 
         if (token) {
             try {
-                const token = localStorage.getItem('token');
                 const res = await axios.post("http://localhost:5000/api/cart/addToCart", { itemId, size }, { headers: { Authorization: `Bearer ${token}` } });
                 if (res.data.success) {
-                    toast.success("Item added")
+                    toast.success("Item added");
                 }
-
             } catch (error) {
-
                 console.log(error);
-                toast.error(error.message)
+                toast.error(error.message);
+            }
+        }
+    };
 
+
+
+    const getCartCount = () => {
+        let count = 0;
+
+        // Loop through each item in the cart
+        for (const sizes of Object.values(cartItems)) {
+            // Loop through each size of the item
+            for (const quantity of Object.values(sizes)) {
+                count += quantity; // Add the quantity to the total count
             }
         }
 
-
-
+        console.log("Current Cart Count:", count); // Log the current count
+        return count; // Return the total count
     };
 
-    const getCartCount = () => {
-        return Object.values(cartItems).reduce((count, sizes) =>
-            count + Object.values(sizes).reduce((sum, quantity) => sum + quantity, 0), 0
-        );
-    };
 
     const updateQuantity = async (itemId, size, quantity) => {
+
         const cartData = { ...cartItems };
         cartData[itemId] = { ...cartData[itemId], [size]: quantity };
         setCartItems(cartData);
@@ -69,10 +83,13 @@ export const ShopContextProvider = ({ children }) => {
             }
         }
     };
+    //
     const getUserCart = async (token) => {
         try {
-            const response = await axios.post("http://localhost:5000/api/cart/getcart", {}, { headers: { Authorization: `Bearer ${token}` } })
+            const response = await axios.post("http://localhost:5000/api/cart/getcart", {}, { headers: { Authorization: `Bearer ${token}` } });
+
             if (response.data.success) {
+
                 setCartItems(response.data.cartData)
             }
         }
@@ -85,19 +102,31 @@ export const ShopContextProvider = ({ children }) => {
 
 
     const getCartAmount = () => {
-        return Object.entries(cartItems).reduce((total, [itemId, sizes]) => {
-            const item = products.find((product) => product._id === itemId);
-            if (!item) return total;
-            return total + Object.entries(sizes).reduce(
-                (subtotal, [size, quantity]) => subtotal + item.price * quantity,
-                0
-            );
-        }, 0);
+
+        let totalAmount = 0;
+
+
+        for (const [itemId, sizes] of Object.entries(cartItems)) {
+
+            const item = products.find(product => product._id === itemId);
+
+
+            if (!item) continue;
+
+
+            for (const [size, quantity] of Object.entries(sizes)) {
+
+                totalAmount += item.price * quantity;
+            }
+        }
+
+
+        return totalAmount;
     };
 
     const logout = () => {
         localStorage.removeItem("token");
-        localStorage.removeItem("userId"); // Remove userId on logout
+        localStorage.removeItem("userId");
         setToken("");
         setUserId("");
         setCartItems({});
@@ -107,11 +136,20 @@ export const ShopContextProvider = ({ children }) => {
     useEffect(() => {
         if (localStorage.getItem("token")) {
             setToken(localStorage.getItem("token"));
-            setUserId(localStorage.getItem("userId")); // Set userId from localStorage
+            setUserId(localStorage.getItem("userId"));
             getUserCart(localStorage.getItem("token"));
         }
     }, []);
 
+    useEffect(() => {
+        const fetchUserCart = async () => {
+            if (token) {
+                await getUserCart(token);
+            }
+        };
+
+        fetchUserCart();
+    }, [token]);
 
 
     return (
